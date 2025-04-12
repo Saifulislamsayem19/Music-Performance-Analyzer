@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Performance Analyzer</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3a7bd5;
+            --primary-light: #6faae7;
+            --secondary-color: #00d2ff;
+            --dark-color: #2c3e50;
+            --light-color: #f8f9fa;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --danger-color: #f44336;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--dark-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeIn 1s ease;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        header p {
+            font-size: 1.1rem;
+            color: var(--dark-color);
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .main-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            margin-bottom: 30px;
+            animation: slideUp 0.6s ease;
+        }
+
+        .upload-section {
+            padding: 40px;
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-color) 100%);
+            color: white;
+            position: relative;
+        }
+
+        .upload-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: white;
+            color: var(--primary-color);
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .file-input-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .file-name {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+
+        .analyze-btn {
+            padding: 12px 30px;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .analyze-btn:hover {
+            background-color: #00b3d9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .analyze-btn:disabled {
+            background-color: #b0b0b0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading-spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        .results-section {
+            display: none;
+            padding: 30px;
+        }
+
+        .score-overview {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .score-card {
+            text-align: center;
+            padding: 20px;
+            background-color: var(--light-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            width: 220px;
+            margin: 10px;
+            transition: var(--transition);
+        }
+
+        .score-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .score-card h3 {
+            margin-bottom: 10px;
+            color: var(--dark-color);
+        }
+
+        .score-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+            display: block;
+        }
+
+        .score-description {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .score-excellent {
+            color: var(--success-color);
+        }
+
+        .score-good {
+            color: var(--primary-color);
+        }
+
+        .score-average {
+            color: var(--warning-color);
+        }
+
+        .score-needs-work {
+            color: var(--danger-color);
+        }
+
+        .detail-tabs {
+            margin: 30px 0;
+        }
+
+        .tab-buttons {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+            color: #777;
+            transition: var(--transition);
+        }
+
+        .tab-btn:hover {
+            color: var(--primary-color);
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .analysis-detail {
+            margin-bottom: 20px;
+        }
+
+        .analysis-detail h3 {
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            color: var(--primary-color);
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .detail-item {
+            background-color: var(--light-color);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .detail-item strong {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--dark-color);
+        }
+
+        .detail-item span {
+            font-size: 1.1rem;
+        }
+
+        .errors-list {
+            list-style: none;
+        }
+
+        .error-item {
+            background-color: #fff3e0;
+            margin-bottom: 10px;
+            padding: 15px;
+            border-left: 4px solid var(--warning-color);
+            border-radius: 4px;
+        }
+
+        .error-type {
+            font-weight: bold;
+            color: var(--dark-color);
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .error-description {
+            color: #666;
+        }
+
+        #visualizationContainer {
+            width: 100%;
+            height: 500px;
+            margin: 20px 0;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+        }
+
+        .feedback-section {
+            background-color: #e8f5e9;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .feedback-section::before {
+            content: '"';
+            font-size: 60px;
+            color: rgba(0, 150, 0, 0.1);
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+
+        .feedback-content {
+            padding-left: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feedback-section h3 {
+            color: var(--success-color);
+            margin-bottom: 15px;
+        }
+
+        .feedback-section p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #777;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .score-overview {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .score-card {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .tab-buttons {
+                flex-wrap: wrap;
+            }
+            
+            .tab-btn {
+                flex: 1 1 auto;
+                text-align: center;
+                padding: 10px;
+            }
+            
+            .upload-section {
+                padding: 30px 20px;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Music Performance Analyzer</h1>
+            <p>Upload your MIDI file and get detailed performance analysis with personalized feedback to improve your musical skills</p>
+        </header>
+
+        <div class="main-card">
+            <div class="upload-section" id="uploadSection">
+                <i class="fas fa-music upload-icon"></i>
+                <h2>Upload Your Music Performance</h2>
+                <p>Select a MIDI file (.mid, .midi) of your musical performance</p>
+                
+                <div class="file-input-wrapper">
+                    <label class="file-input-label">
+                        <i class="fas fa-file-audio"></i> Choose MIDI File
+                        <input type="file" class="file-input" id="midiFile" accept=".mid,.midi">
+                    </label>
+                </div>
+                
+                <div class="file-name" id="fileName"></div>
+                
+                <button class="analyze-btn" id="analyzeBtn" disabled>
+                    <i class="fas fa-chart-line"></i> Analyze Performance
+                </button>
+            </div>
+
+            <div class="loading" id="loadingSection">
+                <div class="loading-spinner"></div>
+                <h3>Analyzing your performance...</h3>
+                <p>This may take a few moments</p>
+            </div>
+
+            <div class="results-section" id="resultsSection">
+                <h2>Performance Analysis Results</h2>
+                
+                <div class="score-overview">
+                    <div class="score-card">
+                        <h3>Overall Score</h3>
+                        <span class="score-value" id="overallScore">--</span>
+                        <span class="score-description">Your performance rating</span>
+                    </div>
+                    
+                    <div class="score-card">
+                        <h3>Pitch Accuracy</h3>
+                        <span class="score-value" id="pitchScore">--</span>
+                        <span class="score-description">Note precision</span>
+                    </div>
+                    
+                    <div class="score-card">
+                        <h3>Rhythm Precision</h3>
+                        <span class="score-value" id="rhythmScore">--</span>
+                        <span class="score-description">Timing accuracy</span>
+                    </div>
+                    
+                    <div class="score-card">
+                        <h3>Dynamics Control</h3>
+                        <span class="score-value" id="dynamicsScore">--</span>
+                        <span class="score-description">Volume & expression</span>
+                    </div>
+                </div>
+                
+                <div class="detail-tabs">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" data-tab="detailsTab">Detailed Analysis</button>
+                        <button class="tab-btn" data-tab="errorsTab">Performance Issues</button>
+                        <button class="tab-btn" data-tab="visualizationTab">Visualization</button>
+                        <button class="tab-btn" data-tab="feedbackTab">Expert Feedback</button>
+                    </div>
+                    
+                    <div class="tab-content active" id="detailsTab">
+                        <div class="analysis-detail">
+                            <h3>Pitch Analysis</h3>
+                            <div class="detail-grid" id="pitchDetails">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <div class="analysis-detail">
+                            <h3>Rhythm Analysis</h3>
+                            <div class="detail-grid" id="rhythmDetails">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <div class="analysis-detail">
+                            <h3>Dynamics Analysis</h3>
+                            <div class="detail-grid" id="dynamicsDetails">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="errorsTab">
+                        <h3>Detected Performance Issues</h3>
+                        <ul class="errors-list" id="errorsList">
+                            <!-- Will be populated by JavaScript -->
+                        </ul>
+                    </div>
+                    
+                    <div class="tab-content" id="visualizationTab">
+                        <h3>Performance Visualization</h3>
+                        <div id="visualizationContainer">
+                            <!-- Plotly visualization will be rendered here -->
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="feedbackTab">
+                        <div class="feedback-section">
+                            <h3>Expert Feedback</h3>
+                            <div class="feedback-content" id="aiFeedback">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>&copy; 2025 Music Performance Analyzer | Helping musicians improve through technology</p>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.16.1/plotly.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const midiFileInput = document.getElementById('midiFile');
+            const fileNameDisplay = document.getElementById('fileName');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const uploadSection = document.getElementById('uploadSection');
+            const loadingSection = document.getElementById('loadingSection');
+            const resultsSection = document.getElementById('resultsSection');
+            
+            // Tab switching functionality
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all buttons and contents
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Add active class to clicked button and corresponding content
+                    button.classList.add('active');
+                    const tabId = button.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+            
+            // File input handling
+            midiFileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    const file = this.files[0];
+                    fileNameDisplay.textContent = file.name;
+                    analyzeBtn.disabled = false;
+                } else {
+                    fileNameDisplay.textContent = '';
+                    analyzeBtn.disabled = true;
+                }
+            });
+            
+            // Analyze button click event
+            analyzeBtn.addEventListener('click', function() {
+                if (midiFileInput.files.length === 0) return;
+                
+                const file = midiFileInput.files[0];
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                // Show loading section
+                uploadSection.style.display = 'none';
+                loadingSection.style.display = 'block';
+                resultsSection.style.display = 'none';
+                
+                // Send file to server for analysis
+                fetch('/analyze_music', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Hide loading and show results
+                    loadingSection.style.display = 'none';
+                    resultsSection.style.display = 'block';
+                    
+                    // Process and display analysis results
+                    displayResults(data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error analyzing file: ' + error.message);
+                    
+                    // Return to upload section
+                    loadingSection.style.display = 'none';
+                    uploadSection.style.display = 'block';
+                });
+            });
+            
+            function displayResults(data) {
+                // Display overall scores
+                const overallScore = document.getElementById('overallScore');
+                const pitchScore = document.getElementById('pitchScore');
+                const rhythmScore = document.getElementById('rhythmScore');
+                const dynamicsScore = document.getElementById('dynamicsScore');
+                
+                // Format and display the overall performance score
+                const performanceScore = Math.round(data.analysis.performance_score);
+                overallScore.textContent = performanceScore;
+                setScoreColor(overallScore, performanceScore);
+                
+                // Calculate and display individual scores (for demonstration)
+                const pScore = calculateComponentScore(data.analysis.pitch_analysis);
+                pitchScore.textContent = pScore;
+                setScoreColor(pitchScore, pScore);
+                
+                const rScore = calculateComponentScore(data.analysis.rhythm_analysis);
+                rhythmScore.textContent = rScore;
+                setScoreColor(rhythmScore, rScore);
+                
+                const dScore = calculateComponentScore(data.analysis.dynamics_analysis);
+                dynamicsScore.textContent = dScore;
+                setScoreColor(dynamicsScore, dScore);
+                
+                // Populate detailed analysis
+                populateDetailsSection(data);
+                
+                // Populate errors list
+                populateErrorsList(data.errors);
+                
+                // Display visualization if available
+                if (data.visualization) {
+                    // Create an iframe to display the visualization
+                    const iframe = document.createElement('iframe');
+                    iframe.src = data.visualization;
+                    iframe.style.width = '100%';
+                    iframe.style.height = '500px';
+                    iframe.style.border = 'none';
+                    
+                    // Clear and append the iframe
+                    const container = document.getElementById('visualizationContainer');
+                    container.innerHTML = '';
+                    container.appendChild(iframe);
+                } else {
+                    document.getElementById('visualizationContainer').innerHTML = 
+                        '<div style="text-align:center;padding:50px;color:#777;">No visualization data available</div>';
+                }
+                
+                // Display AI feedback
+                document.getElementById('aiFeedback').innerHTML = formatFeedback(data.feedback);
+            }
+            
+            function calculateComponentScore(componentData) {
+                // Simple algorithm to convert analysis data to a score out of 100
+                // This is just a demonstration - your actual scoring would depend on your metrics
+                let score = 0;
+                const keys = Object.keys(componentData);
+                
+                if (keys.includes('pitch_variance') || keys.includes('duration_variance') || keys.includes('velocity_variance')) {
+                    // Lower variance can be better in some cases
+                    const variance = componentData.pitch_variance || componentData.duration_variance || componentData.velocity_variance;
+                    score = Math.max(0, 100 - Math.min(variance * 2, 50));
+                } else {
+                    // Use a different approach
+                    const values = Object.values(componentData).filter(val => typeof val === 'number');
+                    if (values.length) {
+                        const avg = values.reduce((sum, val) => sum + val, 0) / values.length;
+                        score = Math.min(100, Math.max(50, avg + 75));
+                    } else {
+                        score = 75; // Default value
+                    }
+                }
+                
+                return Math.round(score);
+            }
+            
+            function setScoreColor(element, score) {
+                // Remove any existing color classes
+                element.classList.remove('score-excellent', 'score-good', 'score-average', 'score-needs-work');
+                
+                // Add appropriate color class based on score
+                if (score >= 90) {
+                    element.classList.add('score-excellent');
+                } else if (score >= 75) {
+                    element.classList.add('score-good');
+                } else if (score >= 60) {
+                    element.classList.add('score-average');
+                } else {
+                    element.classList.add('score-needs-work');
+                }
+            }
+            
+            function populateDetailsSection(data) {
+                // Pitch details
+                const pitchDetails = document.getElementById('pitchDetails');
+                pitchDetails.innerHTML = '';
+                
+                Object.entries(data.analysis.pitch_analysis).forEach(([key, value]) => {
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    const formattedValue = typeof value === 'object' ? JSON.stringify(value) : value;
+                    
+                    const detailItem = document.createElement('div');
+                    detailItem.className = 'detail-item';
+                    detailItem.innerHTML = `
+                        <strong>${formattedKey}</strong>
+                        <span>${formattedValue}</span>
+                    `;
+                    
+                    pitchDetails.appendChild(detailItem);
+                });
+                
+                // Rhythm details
+                const rhythmDetails = document.getElementById('rhythmDetails');
+                rhythmDetails.innerHTML = '';
+                
+                // Handle nested objects like timing_consistency
+                Object.entries(data.analysis.rhythm_analysis).forEach(([key, value]) => {
+                    if (typeof value === 'object' && value !== null) {
+                        // For nested objects
+                        Object.entries(value).forEach(([nestedKey, nestedValue]) => {
+                            const formattedKey = `${key.replace(/_/g, ' ')} - ${nestedKey.replace(/_/g, ' ')}`;
+                            const capitalizedKey = formattedKey.replace(/\b\w/g, l => l.toUpperCase());
+                            
+                            const detailItem = document.createElement('div');
+                            detailItem.className = 'detail-item';
+                            detailItem.innerHTML = `
+                                <strong>${capitalizedKey}</strong>
+                                <span>${nestedValue}</span>
+                            `;
+                            
+                            rhythmDetails.appendChild(detailItem);
+                        });
+                    } else {
+                        // For direct values
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        
+                        const detailItem = document.createElement('div');
+                        detailItem.className = 'detail-item';
+                        detailItem.innerHTML = `
+                            <strong>${formattedKey}</strong>
+                            <span>${value}</span>
+                        `;
+                        
+                        rhythmDetails.appendChild(detailItem);
+                    }
+                });
+                
+                // Dynamics details
+                const dynamicsDetails = document.getElementById('dynamicsDetails');
+                dynamicsDetails.innerHTML = '';
+                
+                Object.entries(data.analysis.dynamics_analysis).forEach(([key, value]) => {
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    
+                    const detailItem = document.createElement('div');
+                    detailItem.className = 'detail-item';
+                    detailItem.innerHTML = `
+                        <strong>${formattedKey}</strong>
+                        <span>${value}</span>
+                    `;
+                    
+                    dynamicsDetails.appendChild(detailItem);
+                });
+            }
+            
+            function populateErrorsList(errors) {
+                const errorsList = document.getElementById('errorsList');
+                errorsList.innerHTML = '';
+                
+                if (!errors || errors.length === 0) {
+                    errorsList.innerHTML = '<div style="text-align:center;padding:20px;color:#777;">No specific errors detected in your performance</div>';
+                    return;
+                }
+                
+                errors.forEach(error => {
+                    const errorItem = document.createElement('li');
+                    errorItem.className = 'error-item';
+                    errorItem.innerHTML = `
+                        <span class="error-type">${error.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+                        <span class="error-description">${error.description}</span>
+                        <small>Severity: ${error.severity}</small>
+                    `;
+                    
+                    errorsList.appendChild(errorItem);
+                });
+            }
+            
+            function formatFeedback(feedback) {
+                // Apply formatting to the AI feedback text
+                if (!feedback) return '<p>No feedback available</p>';
+                
+                // Replace line breaks with paragraphs
+                let formattedFeedback = feedback.replace(/\n\n/g, '</p><p>');
+                
+                // Format lists if any
+                formattedFeedback = formattedFeedback.replace(/(\d+\.\s[^\n]+)/g, '<strong>$1</strong>');
+                
+                // Wrap with paragraph tags
+                return `<p>${formattedFeedback}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
