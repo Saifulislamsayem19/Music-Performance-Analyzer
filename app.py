@@ -624,7 +624,7 @@ os.makedirs(os.path.join('static', 'visualizations'), exist_ok=True)
 
 @app.route('/')
 def index():
-    return render_template('index5.html')  
+    return render_template('index.html')  
 
 @app.route('/static/<path:filename>')  
 def serve_static(filename):
